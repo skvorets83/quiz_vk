@@ -68,4 +68,4 @@
 
 # Приложение: Ссылки на материалы проекта 
 Макеты: https://www.figma.com/design/IYEV7Bl0xCG6WPA4943YvR/Untitled?node-id=0-1&t=FfumsWntiz0bb9Gg-1
-Репозиторий с кодовой базой: будет позже
+Репозиторий с кодовой базой: https://github.com/skvorets83/quiz_vk.git
