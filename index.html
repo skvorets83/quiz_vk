@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Платформа Квизов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .quiz-card {
+            max-width: 650px;
+            margin: 40px auto;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div id="auth-screen" class="screen active quiz-card card shadow p-4">
+            <h3 class="card-title text-center mb-3">Вход в QuizApp</h3>
+            <div class="mb-3">
+                <label class="form-label">Логин</label>
+                <input type="text" id="auth-username" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <input type="password" id="auth-password" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Роль</label>
+                <select id="auth-role" class="form-select">
+                    <option value="участник">Участник (Игрок)</option>
+                    <option value="организатор">Организатор</option>
+                </select>
+            </div>
+            <button onclick="handler_login()" class="btn btn-primary w-100 mb-2">Войти</button>
+            <button onclick="handler_register()" class="btn btn-outline-secondary w-100">Зарегистрироваться</button>
+        </div>
+
+        <div id="cabinet-screen" class="screen quiz-card card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Кабинет: <span id="cab-name" class="text-primary"></span></h4>
+                <span id="cab-role" class="badge bg-info text-dark"></span>
+            </div>
+
+            <div id="organizer-controls" style="display:none;" class="border-bottom pb-3 mb-3">
+                <h5>Панель организатора</h5>
+                <button onclick="change_screen('create-quiz-screen')" class="btn btn-success mb-3 w-100">+ Создать новый
+                    квиз</button>
+
+                <div class="mb-2">
+                    <label class="form-label">Выберите ваш квиз для запуска:</label>
+                    <select id="org-quiz-select" class="form-select mb-2"></select>
+                    <input type="text" id="new-room-code" class="form-control mb-2"
+                        placeholder="Код комнаты (например, GAME1)">
+                    <button onclick="create_quiz_room()" class="btn btn-outline-primary w-100 mb-2">Открыть
+                        комнату</button>
+                </div>
+                <button onclick="admin_next_question()" class="btn btn-warning w-100 mb-2">Старт / Следующий
+                    вопрос</button>
+                <p>Игроки в вашей комнате: <strong id="admin-players-count">0</strong></p>
+            </div>
+
+            <!-- ДЛЯ ИГРОКА -->
+            <div id="player-controls" style="display:none;" class="border-bottom pb-3 mb-3">
+                <h5>Подключение к игре</h5>
+                <input type="text" id="play-room-code" class="form-control mb-2" placeholder="Введите код комнаты">
+                <button onclick="join_quiz_room()" class="btn btn-primary w-100">Присоединиться</button>
+            </div>
+
+            <h5>История участий</h5>
+            <div id="history-list" class="list-group mb-3"></div>
+            <button onclick="location.reload()" class="btn btn-danger btn-sm">Выйти</button>
+        </div>
+
+        <div id="create-quiz-screen" class="screen quiz-card card shadow p-4">
+            <h3>Создание нового квиза</h3>
+            <div class="mb-2">
+                <input type="text" id="qz-title" class="form-control" placeholder="Название квиза">
+            </div>
+            <div class="mb-2">
+                <input type="text" id="qz-category" class="form-control"
+                    placeholder="Категория (например: IT, История)">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Секунд на вопрос:</label>
+                <input type="number" id="qz-time" class="form-control" value="15">
+            </div>
+
+            <hr>
+            <h5>Добавление вопросов</h5>
+            <div id="questions-builder"></div>
+
+            <button onclick="add_question_form()" class="btn btn-outline-secondary btn-sm mb-3">+ Добавить ещё
+                вопрос</button>
+            <button onclick="save_created_quiz()" class="btn btn-success w-100">Сохранить квиз в БД</button>
+            <button onclick="go_to_cabinet()" class="btn btn-link w-100 mt-1">Отмена</button>
+        </div>
+
+        <div id="game-screen" class="screen quiz-card card shadow p-4 text-center">
+            <div class="d-flex justify-content-between">
+                <span id="q-counter" class="badge bg-secondary fs-6">Вопрос 1</span>
+                <span id="timer-display" class="badge bg-danger fs-5">15</span>
+            </div>
+            <h4 id="q-text" class="my-3"></h4>
+
+            <div id="q-image-container" class="mb-3"></div>
+            <div id="answers-container" class="d-grid gap-2 mb-3"></div>
+
+            <div id="game-status" class="alert alert-info py-2" style="display:none;"></div>
+        </div>
+
+        <!-- 5. ФИНАЛ -->
+        <div id="results-screen" class="screen quiz-card card shadow p-4 text-center">
+            <h3>Игра завершена!</h3>
+            <p>Итоговые результаты:</p>
+            <ol id="leaderboard" class="list-group list-group-numbered mb-3"></ol>
+            <button onclick="go_to_cabinet()" class="btn btn-primary">В личный кабинет</button>
+        </div>
+
+    </div>
+
+
+    <script src="client.js"></script>
+</body>
+
+</html>
